@@ -3,6 +3,7 @@ import base64
 from datetime import datetime
 import os
 import shutil
+import cv2
 
 import numpy as np
 import socketio
@@ -44,8 +45,16 @@ class SimplePIController:
 
 
 controller = SimplePIController(0.1, 0.002)
-set_speed = 9
+set_speed = 20
 controller.set_desired(set_speed)
+
+
+
+def img_resize(img):
+    new_img = img[60:135,:,:]
+    new_img = cv2.resize(new_img, (200, 66), interpolation=cv2.INTER_AREA)
+    return new_img
+
 
 
 @sio.on('telemetry')
@@ -60,7 +69,8 @@ def telemetry(sid, data):
         # The current image from the center camera of the car
         imgString = data["image"]
         image = Image.open(BytesIO(base64.b64decode(imgString)))
-        image_array = np.asarray(image)
+        image_original = np.asarray(image)
+        image_array = img_resize(image_original)
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
 
         throttle = controller.update(float(speed))
