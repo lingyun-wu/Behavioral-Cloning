@@ -33,7 +33,7 @@ My project includes the following files:
 * [model.py](https://github.com/lingyun-wu/CarND-Project-03/blob/master/model.py) containing the script to create and train the model
 * [drive.py](https://github.com/lingyun-wu/CarND-Project-03/blob/master/drive.py) for driving the car in autonomous mode
 * [model.h5](https://github.com/lingyun-wu/CarND-Project-03/blob/master/model.h5) containing a trained convolution neural network 
-* [writeup_report.md](https://github.com/lingyun-wu/CarND-Project-03/blob/master/writeup_report.md) or writeup_report.pdf summarizing the results
+* [writeup_report.md](https://github.com/lingyun-wu/CarND-Project-03/blob/master/writeup_report.md) summarizing the results
 * [video.mp4](https://github.com/lingyun-wu/CarND-Project-03/blob/master/video.mp4) result video 
 
 #### 2. Submission includes functional code
