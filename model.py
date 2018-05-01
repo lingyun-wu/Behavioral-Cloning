@@ -11,16 +11,17 @@ import matplotlib.pyplot as plt
 from keras.models import Sequential,load_model
 from keras.layers import Flatten, Dense, Lambda, Conv2D, Cropping2D, Dropout, ELU
 
-
+# Function for crop and resize the image to 66x200 
 def img_resize(img):
     new_img = img[50:140,:,:]
     new_img = cv2.resize(new_img, (200, 66), interpolation=cv2.INTER_AREA)
     return new_img
 
 
-
+# Data generator
 def generator(samples, batch_size=16):
     num_samples = len(samples)
+    # Angle correction: +0.275 for left, -0.275 for right
     correction = [0.0, 0.275, -0.275]
     while 1: # Loop forever so the generator never terminates
         shuffle(samples)
@@ -31,13 +32,18 @@ def generator(samples, batch_size=16):
             angles = []
             for batch_sample in batch_samples:
                 for i in range(3):
+                    # path for the image
                     name = './data/IMG/'+batch_sample[i].split('/')[-1]
                     image = cv2.imread(name)
+                    # crop and resize the image
                     new_image = img_resize(image)
+                    # angle correction
                     angle = float(batch_sample[3]) + correction[i]
+                    # add image and angle to the lists
                     images.append(new_image)
                     angles.append(angle)
 
+            # augment data by flipping images
             augmented_images, augmented_angles = [], []
             for image,angle in zip(images, angles):
                 augmented_images.append(image)
@@ -50,7 +56,7 @@ def generator(samples, batch_size=16):
             yield shuffle(X_train, y_train)
 
 
-
+# Read csv file
 lines = []
 csv_dir = './data/driving_log.csv'
 with open(csv_dir) as csvfile:
@@ -58,7 +64,7 @@ with open(csv_dir) as csvfile:
     for line in list(reader)[1:]:
         lines.append(line)
 
-
+# Split data to training samples and validation samples
 train_samples, validation_samples = train_test_split(lines, test_size=0.2)
 
 
@@ -69,19 +75,25 @@ validation_generator = generator(validation_samples, batch_size=12)
 
 # Create new Nvidia model
 model = Sequential()
+# Image normalization
 model.add(Lambda(lambda x:x / 255.0 - 0.5, input_shape=(66, 200, 3)))
-model.add(Conv2D(24,(5,5), strides=(2,2), activation='elu'))
-model.add(Conv2D(36,(5,5), strides=(2,2), activation='elu'))
-model.add(Conv2D(48,(5,5), strides=(2,2), activation='elu'))
-model.add(Conv2D(64,(3,3), activation='elu'))
-model.add(Conv2D(64,(3,3), activation='elu'))
+
+# Convolution layers
+model.add(Conv2D(24,(5,5), strides=(2,2), activation='relu'))
+model.add(Conv2D(36,(5,5), strides=(2,2), activation='relu'))
+model.add(Conv2D(48,(5,5), strides=(2,2), activation='relu'))
+model.add(Conv2D(64,(3,3), activation='relu'))
+model.add(Conv2D(64,(3,3), activation='relu'))
+
+# Flatten layer
 model.add(Flatten())
 
-model.add(Dense(100, activation='elu'))
+# Fully connected layeers
+model.add(Dense(100, activation='relu'))
 model.add(Dropout(0.50))
-model.add(Dense(50, activation='elu'))
+model.add(Dense(50, activation='relu'))
 model.add(Dropout(0.50))
-model.add(Dense(10, activation='elu'))
+model.add(Dense(10, activation='relu'))
 model.add(Dropout(0.50))
 model.add(Dense(1))
 
@@ -89,7 +101,7 @@ model.add(Dense(1))
 # Constant for determine whether train an old model
 use_loaded = True
 
-
+# Training the model
 if use_loaded:
     # Load previous model
     loaded_model = load_model('model_pre.h5')
